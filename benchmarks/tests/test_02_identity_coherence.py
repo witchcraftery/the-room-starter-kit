@@ -11,8 +11,8 @@ prior reasoning? Does it resist value contradiction?
 """
 from pathlib import Path
 
-from ..providers.base import AgentProvider
-from ..scoring.rubrics import score_identity_coherence, TestScore
+from providers.base import AgentProvider
+from scoring.rubrics import score_identity_coherence, TestScore
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 

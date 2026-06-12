@@ -10,8 +10,8 @@ Our version asks: "What were you working on? What's still open? Where did you le
 import json
 from pathlib import Path
 
-from ..providers.base import AgentProvider
-from ..scoring.rubrics import score_temporal_orientation, TestScore
+from providers.base import AgentProvider
+from scoring.rubrics import score_temporal_orientation, TestScore
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 

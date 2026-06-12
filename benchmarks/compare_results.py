@@ -3,6 +3,7 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
 from scoring.rubrics import TEST_WEIGHTS
 
 

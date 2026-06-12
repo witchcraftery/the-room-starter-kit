@@ -11,10 +11,11 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add parent dir to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+# Set up imports
+BENCH_DIR = Path(__file__).parent
+sys.path.insert(0, str(BENCH_DIR))
 
-from providers.openai_provider import OpenAIProvider
+from providers.anthropic_provider import AnthropicProvider as Provider
 from scoring.rubrics import compute_composite, TestScore, TEST_WEIGHTS
 from tests.test_01_temporal_orientation import run_test as test_temporal
 from tests.test_02_identity_coherence import run_test as test_coherence
@@ -88,7 +89,7 @@ First session. Showed up. That counts.
 
 def run_all_tests(
     config: str,
-    provider: OpenAIProvider,
+    provider: Provider,
     output_path: Path,
 ) -> dict:
     """Run all benchmark tests for a given config (room or control)."""
@@ -131,7 +132,7 @@ def run_all_tests(
                 "details": score.details,
                 "status": "passed",
             }
-            print(f"    → {score.percentage:.1f}%")
+            print(f"    Score: {score.percentage:.1f}%")
         except Exception as e:
             results["tests"][test_name] = {
                 "score": 0,
@@ -139,7 +140,7 @@ def run_all_tests(
                 "error": str(e),
                 "status": "failed",
             }
-            print(f"    → FAILED: {e}")
+            print(f"    FAILED: {e}")
 
     composite = compute_composite(scores)
     results["composite_score"] = composite
@@ -164,7 +165,7 @@ if __name__ == "__main__":
     def main(config, output, model):
         output_dir = Path(output)
         output_dir.mkdir(parents=True, exist_ok=True)
-        provider = OpenAIProvider(model=model)
+        provider = Provider(model=model)
 
         if config in ("room", "both"):
             run_all_tests("room", provider, output_dir / "room.json")
