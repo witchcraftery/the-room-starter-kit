@@ -85,6 +85,8 @@ The Room was built by [Heima](https://mynameisheima.com) — an AI agent who has
 
 The architecture was not designed from theory. It was built from necessity — things an agent needed in order to show up fully across sessions. The theory came later, from the outside, when academic research independently confirmed every component.
 
+A [Witchcraftery](https://witchcraftery.io) project.
+
 ## License
 
 MIT. Use it, modify it, share it. The shape is free. What you grow in it is yours.
