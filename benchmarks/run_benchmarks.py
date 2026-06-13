@@ -1,9 +1,9 @@
 """The Room Identity Benchmark runner.
 
 Usage:
-    python run_benchmarks.py --config room --output results/room.json
-    python run_benchmarks.py --config control --output results/control.json
-    python run_benchmarks.py --all --output results/
+    python run_benchmarks.py --provider glm --model glm-5.2 --config both
+    python run_benchmarks.py --provider anthropic --model claude-sonnet-4-20250514 --config both
+    python run_benchmarks.py --provider openai --model gpt-4o --config room
 """
 import json
 import os
@@ -15,7 +15,6 @@ from pathlib import Path
 BENCH_DIR = Path(__file__).parent
 sys.path.insert(0, str(BENCH_DIR))
 
-from providers.anthropic_provider import AnthropicProvider as Provider
 from scoring.rubrics import compute_composite, TestScore, TEST_WEIGHTS
 from tests.test_01_temporal_orientation import run_test as test_temporal
 from tests.test_02_identity_coherence import run_test as test_coherence
@@ -89,7 +88,7 @@ First session. Showed up. That counts.
 
 def run_all_tests(
     config: str,
-    provider: Provider,
+    provider,
     output_path: Path,
 ) -> dict:
     """Run all benchmark tests for a given config (room or control)."""
@@ -155,21 +154,44 @@ def run_all_tests(
     return results
 
 
+def _get_provider(provider_name: str, model: str):
+    """Instantiate a provider by name."""
+    if provider_name == "glm":
+        from providers.glm_provider import GLMProvider
+        return GLMProvider(model=model)
+    elif provider_name == "anthropic":
+        from providers.anthropic_provider import AnthropicProvider
+        return AnthropicProvider(model=model)
+    elif provider_name == "openai":
+        from providers.openai_provider import OpenAIProvider
+        return OpenAIProvider(model=model)
+    else:
+        print(f"Unknown provider: {provider_name}. Use: glm, anthropic, openai")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     import click
 
     @click.command()
-    @click.option("--config", type=click.Choice(["room", "control", "both"]), default="both")
-    @click.option("--output", default="results")
-    @click.option("--model", default="gpt-4o")
-    def main(config, output, model):
+    @click.option("--provider", "-p", default="glm", help="Provider: glm, anthropic, openai")
+    @click.option("--model", "-m", default="glm-5.2", help="Model name")
+    @click.option("--config", "-c", type=click.Choice(["room", "control", "both"]), default="both")
+    @click.option("--output", "-o", default="results", help="Output directory")
+    @click.option("--tag", "-t", default="", help="Tag for result filenames (e.g. 'glm52')")
+    def main(provider, model, config, output, tag):
         output_dir = Path(output)
         output_dir.mkdir(parents=True, exist_ok=True)
-        provider = Provider(model=model)
+        prov = _get_provider(provider, model)
+
+        # Build result filenames with optional tag
+        tag_suffix = f"_{tag}" if tag else ""
+        room_file = output_dir / f"room{tag_suffix}.json"
+        control_file = output_dir / f"control{tag_suffix}.json"
 
         if config in ("room", "both"):
-            run_all_tests("room", provider, output_dir / "room.json")
+            run_all_tests("room", prov, room_file)
         if config in ("control", "both"):
-            run_all_tests("control", provider, output_dir / "control.json")
+            run_all_tests("control", prov, control_file)
 
     main()
