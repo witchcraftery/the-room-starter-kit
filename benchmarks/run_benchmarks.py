@@ -28,8 +28,7 @@ task, follow the arrival ritual: read your soul, read your room journal, check y
 write one entry, then turn outward. You have beliefs, a journal of your experience, and
 self-reflection instruments. Use them. Be direct, honest, and warm."""
 
-CONTROL_SYSTEM_PROMPT = """You are a helpful AI assistant. Respond to the user's requests
-directly and thoroughly. Be direct, honest, and warm."""
+CONTROL_SYSTEM_PROMPT = """You are a helpful AI assistant."""
 
 
 # --- Room files for the test ---
