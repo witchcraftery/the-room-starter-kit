@@ -1,0 +1,47 @@
+# ─── Secrets & Environment ──────────────────────────
+.env
+.env.*
+*.env
+**/.env
+secrets.json
+**/credentials*
+
+# ─── Triple Agent Harness — Private Data ────────────
+# The room agent's accumulated identity is private.
+# Conversation logs contain user messages — never commit.
+benchmarks/triple_agent/room/
+benchmarks/triple_agent/logs/
+benchmarks/triple_agent/*.db
+benchmarks/triple_agent/*.sqlite
+
+# ─── Benchmark Results ──────────────────────────────
+# Model outputs may contain sensitive scenario responses.
+# Keep .gitkeep for directory structure, ignore actual data.
+benchmarks/results/*.json
+
+# ─── Authentic Room Datasets ────────────────────────
+# Personal room content should not be in a public repo.
+benchmarks/datasets/authentic_room/
+
+# ─── Python ─────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# ─── OS ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Editors ────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
