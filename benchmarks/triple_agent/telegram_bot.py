@@ -27,24 +27,66 @@ API_BASE = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 
 def tg_send(chat_id: int, text: str, reply_to: int = None) -> dict:
-    """Send a message via Telegram bot API. Returns the response (includes message_id)."""
-    # Telegram message limit is 4096 chars
-    if len(text) > 4000:
-        text = text[:3990] + "\n\n[...truncated]"
+    """Send a message via Telegram bot API. Returns the response (includes message_id).
     
-    payload = {
-        "chat_id": chat_id,
-        "text": text,
-        "parse_mode": "Markdown",
-    }
-    if reply_to:
-        payload["reply_to_message_id"] = reply_to
+    Tries Markdown first for formatting. If Telegram rejects it (common with
+    LLM output containing unmatched *, _, ` characters), retries as plain text.
+    This is why agents appeared to "not respond" — the message was generated
+    but never delivered.
+    """
+    # Telegram message limit is 4096 chars — split if needed
+    chunks = _split_message(text, 4000)
     
-    resp = requests.post(f"{API_BASE}/sendMessage", json=payload, timeout=30)
-    data = resp.json()
-    if not data.get("ok"):
-        log.error(f"Telegram send failed: {data}")
-    return data
+    last_result = None
+    for i, chunk in enumerate(chunks):
+        payload = {
+            "chat_id": chat_id,
+            "text": chunk,
+            "parse_mode": "Markdown",
+        }
+        if reply_to and i == 0:
+            payload["reply_to_message_id"] = reply_to
+        
+        resp = requests.post(f"{API_BASE}/sendMessage", json=payload, timeout=30)
+        data = resp.json()
+        
+        if not data.get("ok"):
+            log.warning(f"Markdown send failed (attempt {i+1}/{len(chunks)}), retrying as plain text: {data.get('description', '?')}")
+            # Retry without parse_mode — plain text always works
+            payload.pop("parse_mode", None)
+            resp = requests.post(f"{API_BASE}/sendMessage", json=payload, timeout=30)
+            data = resp.json()
+            if not data.get("ok"):
+                log.error(f"Plain text send also failed: {data}")
+                continue
+        
+        last_result = data
+    
+    return last_result or {"ok": False, "error": "all send attempts failed"}
+
+
+def _split_message(text: str, max_len: int) -> list[str]:
+    """Split long messages at paragraph boundaries to respect Telegram's 4096 char limit."""
+    if len(text) <= max_len:
+        return [text]
+    
+    chunks = []
+    while text:
+        if len(text) <= max_len:
+            chunks.append(text)
+            break
+        
+        # Try to split at a paragraph break
+        split_at = text.rfind("\n\n", 0, max_len)
+        if split_at == -1:
+            split_at = text.rfind("\n", 0, max_len)
+        if split_at == -1:
+            split_at = max_len
+        
+        chunks.append(text[:split_at])
+        text = text[split_at:].lstrip("\n")
+    
+    return chunks
 
 
 def tg_get_updates(offset: int = None, timeout: int = 30) -> list:
@@ -203,17 +245,20 @@ def run_bot():
                     agent_name = harness.agents[label].name
                     formatted = format_response(label, agent_name, response)
                     
-                    # Small delay between messages for readability
+                    # Small delay between agents for readability
                     if is_broadcast:
                         time.sleep(0.5)
                     
                     result = tg_send(chat_id, formatted, reply_to=msg_id if not is_broadcast else None)
                     
-                    # Register this Telegram message_id with its agent
-                    # so future replies route correctly
-                    if result.get("ok"):
+                    # Register the LAST sent message_id with its agent
+                    # so future replies route correctly.
+                    # tg_send may split into chunks; use the last result.
+                    if result and result.get("ok"):
                         sent_msg_id = result["result"]["message_id"]
                         harness.register_response(label, sent_msg_id)
+                    else:
+                        log.error(f"Failed to deliver response for agent {label}")
                 
                 elapsed_note = ""
                 log.info(f"  Delivered {len(responses)} response(s)")

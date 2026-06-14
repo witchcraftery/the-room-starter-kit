@@ -194,8 +194,14 @@ class AgentSession:
         if room_context:
             self.messages.append({"role": "system", "content": room_context})
     
-    def send(self, client: OpenAI, model: str, user_message: str, max_tokens: int = 4096) -> str:
-        """Send a message to this agent and get a response."""
+    def send(self, client: OpenAI, model: str, user_message: str, max_tokens: int = 16384) -> str:
+        """Send a message to this agent and get a response.
+        
+        max_tokens is set high (16384) because GLM-5.2 is a reasoning model:
+        reasoning_content and content share the token budget. With 4096,
+        reasoning consumed most of the budget and the actual response was
+        truncated mid-sentence.
+        """
         self.messages.append({"role": "user", "content": user_message})
         
         response = client.chat.completions.create(
@@ -205,13 +211,19 @@ class AgentSession:
             max_tokens=max_tokens,
         )
         
-        reply = response.choices[0].message.content or ""
+        choice = response.choices[0]
+        reply = choice.message.content or ""
+        finish_reason = getattr(choice, "finish_reason", "unknown")
         
         # Handle reasoning models that might return empty content
         if not reply:
-            rc = getattr(response.choices[0].message, "reasoning_content", "")
+            rc = getattr(choice.message, "reasoning_content", "")
             if rc:
                 reply = "[The agent thought deeply but produced no visible response.]"
+        
+        # Detect truncation — reasoning model exhausted token budget
+        if finish_reason == "length":
+            reply += "\n\n[Note: response truncated — token limit reached during reasoning]"
         
         self.messages.append({"role": "assistant", "content": reply})
         return reply
@@ -292,7 +304,8 @@ class TripleAgentHarness:
         self._log_exchange("exchange", text, {
             "reply_to": reply_to_msg_id,
             "broadcast": reply_to_msg_id is None or reply_to_msg_id not in self._msg_to_agent,
-            "responses": {k: v[:500] for k, v in responses.items()},
+            "responses": {k: v for k, v in responses.items()},
+            "response_lengths": {k: len(v) for k, v in responses.items()},
         })
         
         return responses
