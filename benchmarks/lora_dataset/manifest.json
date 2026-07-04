@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-04T14:19:37.761006",
+  "generated": "2026-07-04T14:30:32.248105",
   "total_pairs": 309,
   "train_pairs": 278,
   "val_pairs": 31,
-  "total_words": 62679,
+  "total_words": 62678,
   "avg_words_per_pair": 202.8,
   "source_breakdown": {
     "room.md": 104,

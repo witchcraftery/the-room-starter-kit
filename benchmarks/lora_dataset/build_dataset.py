@@ -367,8 +367,8 @@ def filter_quality(pairs: list[dict]) -> list[dict]:
     locations) from all text."""
     # PII scrubbing patterns
     email_re = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
-    phone_re = re.compile(r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b')
-    apikey_re = re.compile(r'(sk-|pk-)[a-zA-Z0-9]{10,}', re.IGNORECASE)
+    phone_re = re.compile(r'\(?\b\d{3}\)?[-.\s]?\d{3}[-.]?\d{4}\b')
+    apikey_re = re.compile(r'(sk-|pk-)[a-zA-Z0-9\-]{10,}', re.IGNORECASE)
     
     # Named-entity PII: real names, project names, locations
     name_replacements = [
