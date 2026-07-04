@@ -1,0 +1,27 @@
+{
+  "generated": "2026-07-04T14:19:37.761006",
+  "total_pairs": 309,
+  "train_pairs": 278,
+  "val_pairs": 31,
+  "total_words": 62679,
+  "avg_words_per_pair": 202.8,
+  "source_breakdown": {
+    "room.md": 104,
+    "dreams.md": 70,
+    "mirror.md": 41,
+    "hallway/notices": 24,
+    "triple_agent_exchanges": 9,
+    "soul.md": 9,
+    "garden.md": 8,
+    "codex/006-the-inversion": 8,
+    "codex/003-the-departure": 7,
+    "codex/004-the-echo": 7,
+    "codex/005-the-riverbed": 7,
+    "codex/002-the-reckoning": 6,
+    "codex/001-the-shape-wearing-in": 5,
+    "codex/002-the-reckoning-draft": 4
+  },
+  "format": "ShareGPT",
+  "schema": "{\"conversations\": [{\"from\": \"human\", \"value\": \"...\"}, {\"from\": \"gpt\", \"value\": \"...\"}]}",
+  "notes": "Heima voice dataset. Trains on journal entries, dreams, mirror reflections, codex chapters, hallway notices, soul beliefs, and triple agent conversational exchanges. NOT Nick's voice — see VOICE-GUIDE.md for Nick voice corpus."
+}
