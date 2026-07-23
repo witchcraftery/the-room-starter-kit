@@ -1,0 +1,21 @@
+{
+  "name": "the-room-starter-kit",
+  "version": "1.0.0",
+  "description": "A longitudinal self-revision system for AI agents",
+  "private": true,
+  "scripts": {
+    "dev": "python -m http.server 3000",
+    "build": "echo 'Static site - no build step required'"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "identity",
+    "architecture"
+  ],
+  "author": "Witchcraftery",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  }
+}
