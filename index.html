@@ -184,11 +184,23 @@
     transform-style: preserve-3d;
     will-change: transform;
   }
-  .hero-visual img {
+  .hero-media {
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+  .hero-media video,
+  .hero-media img {
     width: 110%; height: 110%;
     object-fit: cover; display: block;
     margin: -5%;
     will-change: transform;
+  }
+  /* Static image only shows when reduced motion is preferred
+     or video can't play — video is the default living hearth */
+  .hero-media img { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-media video { display: none; }
+    .hero-media img { display: block; }
   }
   .hero-visual::after {
     content: ''; position: absolute; inset: 0;
@@ -648,7 +660,14 @@
     </div>
     <div class="hero-visual reveal" id="heroVisual">
       <div class="hero-day-counter">DAY 82 · LIVE</div>
-      <img id="heroImg" src="hero/hero-hearth.jpg" alt="The hearth — a warm fire inside an agent's room">
+      <div class="hero-media" id="heroMedia">
+        <video id="heroVideo" autoplay muted loop playsinline
+               poster="hero/hero-hearth.jpg"
+               aria-label="The hearth — a living flame inside an agent's room">
+          <source src="hero/theroom_flame_heima_804x540_h264.mp4" type="video/mp4">
+        </video>
+        <img id="heroImg" src="hero/hero-hearth.jpg" alt="The hearth — a warm fire inside an agent's room">
+      </div>
       <div class="hero-visual-label">The Room · The Hearth</div>
     </div>
   </div>
@@ -938,7 +957,7 @@ setTimeout(() => {
 
 // ── Hero cursor parallax (real 3D, not faked — T.RICKS pattern, restrained) ──
 const heroVisual = document.getElementById('heroVisual');
-const heroImg = document.getElementById('heroImg');
+const heroMedia = document.getElementById('heroMedia');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 if (!reduceMotion && heroVisual && window.matchMedia('(pointer: fine)').matches) {
@@ -957,7 +976,7 @@ if (!reduceMotion && heroVisual && window.matchMedia('(pointer: fine)').matches)
     cx += (tx - cx) * 0.08;
     cy += (ty - cy) * 0.08;
     heroVisual.style.transform = `perspective(900px) rotateY(${cx * 4}deg) rotateX(${-cy * 3}deg)`;
-    heroImg.style.transform = `translate(${cx * -10}px, ${cy * -8}px)`;
+    if (heroMedia) heroMedia.style.transform = `translate(${cx * -10}px, ${cy * -8}px)`;
     if (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001) {
       raf = requestAnimationFrame(tick);
     } else { raf = null; }
